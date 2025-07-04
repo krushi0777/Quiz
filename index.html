@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Quiz App</title>
+  <link rel="stylesheet" href="img/quiz1.png">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #EAEFEF;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 500px;
+    }
+
+    #quiz-wrapper {
+      display: grid;
+      justify-content: space-around;
+      align-items: center;
+      margin-top: auto;
+      width: 100%;
+      /* margin-top: 100px; */
+    }
+
+    .question-box {
+      max-width: 400px;
+      width: 100%;
+      padding: 20px;
+      background-color: #333446;
+      color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      margin-top: 80px;
+    }
+
+    .options {
+      list-style: none;
+      padding: 0;
+    }
+
+    .options li {
+      margin-bottom: 8px;
+    }
+
+    .correct {
+      color: green;
+    }
+
+    .wrong {
+      color: red;
+    }
+
+    .progress {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    #navigation {
+      margin-top: 10px;
+    }
+
+    button {
+      margin: 0px;
+      padding: 8px 16px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background-color: #7F8CAA;
+      color: white;
+    }
+
+    button:hover {
+      background-color: #333446;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Centered Card Area -->
+  <div id="quiz-wrapper">
+    <div id="quiz-container">
+
+    </div>
+
+  </div>
+
+  <!-- Navigation & Progress Below -->
+  <div id="navigation">
+    <button onclick="prevQuestion()">Previous</button>
+    <button onclick="nextQuestion()">Next</button>
+  </div>
+  <div class="progress" id="progress-info"></div>
+
+
+  <script>
+    const questions = [
+      {
+        question: "What is the capital of France?",
+        options: ["Berlin", "Madrid", "Paris", "Rome"],
+        correctIndex: 2
+      },
+      {
+        question: "Which planet is known as the Red Planet?",
+        options: ["Earth", "Mars", "Jupiter", "Saturn"],
+        correctIndex: 1
+      },
+      {
+        question: "Who wrote 'Romeo and Juliet'?",
+        options: ["Shakespeare", "Charles Dickens", "Leo Tolstoy"],
+        correctIndex: 0
+      },
+      {
+        question: "What is the largest ocean?",
+        options: ["Indian", "Pacific", "Atlantic", "Arctic"],
+        correctIndex: 1
+      },
+      {
+        question: "Which is the smallest prime number?",
+        options: ["0", "1", "2", "3"],
+        correctIndex: 2
+      }
+    ];
+
+    let currentQuestionIndex = 0;
+    let userAnswers = Array(questions.length).fill(null);
+
+    function loadQuestion() {
+      const container = document.getElementById('quiz-container');
+      const current = questions[currentQuestionIndex];
+      const storedAnswer = userAnswers[currentQuestionIndex];
+
+      container.innerHTML = `
+        <div class="question-box">
+          <h3>Q${currentQuestionIndex + 1}: ${current.question}</h3>
+          <ul class="options">
+            ${current.options.map((option, index) => `
+              <li>
+                <input type="radio" name="option" id="opt${index}" value="${index}"
+                  ${storedAnswer !== null ? 'disabled' : ''}
+                  ${storedAnswer === index ? 'checked' : ''} 
+                />
+                <label for="opt${index}">${option}</label>
+              </li>
+            `).join('')}
+          </ul>
+        </div>
+      `;
+
+      document.getElementById('progress-info').textContent =
+        `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+    }
+
+    function nextQuestion() {
+      storeAnswer();
+      if (currentQuestionIndex < questions.length - 1) {
+        currentQuestionIndex++;
+        loadQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    function prevQuestion() {
+      if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        loadQuestion();
+      }
+    }
+
+    function storeAnswer() {
+      const selected = document.querySelector('input[name="option"]:checked');
+      if (selected && userAnswers[currentQuestionIndex] === null) {
+        userAnswers[currentQuestionIndex] = parseInt(selected.value);
+      }
+    }
+
+    function showResults() {
+      let correctCount = 0;
+      const container = document.getElementById('quiz-container');
+      let resultHTML = `<div class="question-box"><h2>Quiz Completed!</h2><ul>`;
+
+      questions.forEach((q, index) => {
+        const userAnswer = userAnswers[index];
+        const isCorrect = userAnswer === q.correctIndex;
+        if (isCorrect) correctCount++;
+
+        const answerText = q.options[userAnswer] || "Not answered";
+
+        resultHTML += `
+          <li>
+            <strong>Q${index + 1}:</strong> ${q.question}<br />
+            <span class="${isCorrect ? 'correct' : 'wrong'}">
+              Your answer: ${answerText} (${isCorrect ? 'Correct ✅' : 'Incorrect ❌'})
+            </span>
+          </li><br />
+        `;
+      });
+
+      resultHTML += `</ul>
+        <h3>Total Score: ${correctCount} / ${questions.length}</h3>
+        <button onclick="restartQuiz()">Restart Quiz</button></div>
+      `;
+
+      container.innerHTML = resultHTML;
+      document.getElementById('navigation').style.display = 'none';
+      document.getElementById('progress-info').textContent = "";
+    }
+
+    function restartQuiz() {
+      currentQuestionIndex = 0;
+      userAnswers = Array(questions.length).fill(null);
+      document.getElementById('navigation').style.display = 'block';
+      loadQuestion();
+    }
+
+    loadQuestion();
+  </script>
+</body>
+
+</html>
